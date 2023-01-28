@@ -31,3 +31,8 @@ class CarView(ModelViewSet):
         
         
         return queryset
+    
+    # def get_serializer_class(self):
+    #     if self.request.user.is_staff:
+    #             return CarStaffSerializer
+    #     return super().get_serializer_class()
