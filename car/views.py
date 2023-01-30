@@ -6,6 +6,7 @@ from .permissions import IsStaffOrReadOnly
 from django.db.models import Q
 from rest_framework.generics import ListCreateAPIView,RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 # Create your views here.
 
 
@@ -52,5 +53,22 @@ class ReservationView(ListCreateAPIView):
 class ReservationDetailview(RetrieveUpdateDestroyAPIView):
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
+    
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial',False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        end = serializer.validated_data.get('end_date')
+        car = serializer.validated_data.get('car')
+        start = instance.start_date
+        # today = datetime.today
+        
+        if Reservation.objects.filter(car=car).exists():
+            for res in Reservation.objects.filter(car=car):
+                if start < res.start_date < end:
+                    return Response({'message':'Car is not available...'})
+        return super().update(request, *args, **kwargs)
+       
                
             
