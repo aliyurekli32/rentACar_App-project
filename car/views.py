@@ -1,9 +1,11 @@
 from django.shortcuts import render
 from rest_framework.viewsets import ModelViewSet
 from .models import Car, Reservation
-from car.serializers import CarSerializers
+from car.serializers import CarSerializers, ReservationSerializer
 from .permissions import IsStaffOrReadOnly
 from django.db.models import Q
+from rest_framework.generics import ListCreateAPIView,RetrieveUpdateDestroyAPIView
+from rest_framework.permissions import IsAuthenticated
 # Create your views here.
 
 
@@ -36,3 +38,19 @@ class CarView(ModelViewSet):
     #     if self.request.user.is_staff:
     #             return CarStaffSerializer
     #     return super().get_serializer_class()
+    
+class ReservationView(ListCreateAPIView):
+    queryset = Reservation.objects.all()
+    serializer_class = ReservationSerializer
+    permission_classes = [IsAuthenticated,]
+        
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return super().get_queryset()
+        return super().get_queryset().filter(customer=self.request.user)
+    
+class ReservationDetailview(RetrieveUpdateDestroyAPIView):
+    queryset = Reservation.objects.all()
+    serializer_class = ReservationSerializer
+               
+            
